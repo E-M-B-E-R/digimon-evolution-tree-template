@@ -18,6 +18,9 @@ interface VerticalEvolutionViewProps {
 
 const stageOrder: DigimonStage[] = ['In-Training', 'Rookie', 'Champion', 'Ultimate', 'Mega'];
 
+// Throttle delay for scroll event handler (in milliseconds)
+const SCROLL_THROTTLE_DELAY = 100;
+
 interface DigimonPosition {
   id: string;
   x: number;
@@ -44,6 +47,7 @@ export function VerticalEvolutionView({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastCallRef = useRef<number>(0);
+  const trailingTimeoutRef = useRef<number | null>(null);
 
   // Get the first In-Training Digimon as default root
   const inTrainingDigimon = useMemo(() => 
@@ -174,14 +178,27 @@ export function VerticalEvolutionView({
       }
     };
 
-    // Throttle function to limit execution frequency
-    const throttleDelay = 100; // milliseconds
+    // Throttle function with trailing call to capture final scroll position
     const throttledUpdatePositions = () => {
       const now = Date.now();
-      if (now - lastCallRef.current >= throttleDelay) {
+      
+      // Clear any pending trailing call
+      if (trailingTimeoutRef.current !== null) {
+        clearTimeout(trailingTimeoutRef.current);
+      }
+      
+      // If enough time has passed, update immediately
+      if (now - lastCallRef.current >= SCROLL_THROTTLE_DELAY) {
         lastCallRef.current = now;
         updatePositions();
       }
+      
+      // Schedule a trailing call to ensure final position is captured
+      trailingTimeoutRef.current = window.setTimeout(() => {
+        lastCallRef.current = Date.now();
+        updatePositions();
+        trailingTimeoutRef.current = null;
+      }, SCROLL_THROTTLE_DELAY);
     };
 
     // Initial update
@@ -195,6 +212,9 @@ export function VerticalEvolutionView({
     
     return () => {
       clearTimeout(timer);
+      if (trailingTimeoutRef.current !== null) {
+        clearTimeout(trailingTimeoutRef.current);
+      }
       window.removeEventListener('resize', updatePositions);
       if (containerRef.current) {
         containerRef.current.removeEventListener('scroll', throttledUpdatePositions);
