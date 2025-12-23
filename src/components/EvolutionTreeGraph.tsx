@@ -385,7 +385,6 @@ export function EvolutionTreeGraph({
 
               // Calculate midpoint with offset based on relative positions
               const horizontalDistance = toX - fromX;
-              const verticalDistance = toY - fromY;
               
               // Use curved path with better spacing to avoid line crossings
               const curveDistance = horizontalDistance * 0.35;
