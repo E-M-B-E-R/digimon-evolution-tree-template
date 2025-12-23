@@ -122,49 +122,125 @@ export function EvolutionTreeGraph({
     };
     collapsed.forEach(id => computeDescendants(id));
     
-    // Position nodes
+    // Position nodes using a hierarchical layout algorithm to minimize line crossings
     const positionedNodes: PositionedNode[] = [];
     const cardWidth = 160;
     const cardHeight = 200;
-    const horizontalGap = 200;
-    // Increased vertical space between cards to reduce overlaps
-    const verticalGap = 200;
+    const horizontalGap = 240;
+    const verticalGap = 280;
     
+    const positionMap = new Map<string, { x: number; y: number }>();
     const stages = Array.from(nodesByStage.keys()).sort((a, b) => a - b);
+    
+    // First pass: assign each node to a grid position based on stage and parent relationships
+    const nodeToGridRow = new Map<string, number>();
     
     stages.forEach((stageLevel, columnIndex) => {
       const digimonIds = Array.from(nodesByStage.get(stageLevel) || []).filter(id => !hiddenNodes.has(id));
       
-      digimonIds.forEach((id, rowIndex) => {
-        const digimon = getDigimonById(id);
-        if (!digimon) return;
+      // Sort by parent position to keep siblings together and reduce crossings
+      const sortedIds = digimonIds.sort((a, b) => {
+        const parentsA = getEvolutionsTo(a).map(e => e.from);
+        const parentsB = getEvolutionsTo(b).map(e => e.from);
         
-        const x = columnIndex * (cardWidth + horizontalGap);
-        const y = rowIndex * (cardHeight + verticalGap);
+        if (parentsA.length > 0 && parentsB.length > 0) {
+          const posA = nodeToGridRow.get(parentsA[0]) ?? 0;
+          const posB = nodeToGridRow.get(parentsB[0]) ?? 0;
+          return posA - posB;
+        }
         
-        positionedNodes.push({
-          id,
-          digimon,
-          x,
-          y,
-          column: columnIndex,
-          row: rowIndex
-        });
+        return 0;
       });
+      
+      sortedIds.forEach((id, rowIndex) => {
+        nodeToGridRow.set(id, rowIndex);
+      });
+    });
+    
+    // Second pass: calculate actual positions
+    stages.forEach((stageLevel, columnIndex) => {
+      const digimonIds = Array.from(nodesByStage.get(stageLevel) || []).filter(id => !hiddenNodes.has(id));
+      const x = columnIndex * (cardWidth + horizontalGap);
+      
+      // Sort by parent relationship
+      const sortedIds = digimonIds.sort((a, b) => {
+        const rowA = nodeToGridRow.get(a) ?? 0;
+        const rowB = nodeToGridRow.get(b) ?? 0;
+        return rowA - rowB;
+      });
+      
+      sortedIds.forEach((id) => {
+        const predecessors = getEvolutionsTo(id).map(e => e.from);
+        const predecessorPositions = predecessors
+          .map(p => positionMap.get(p))
+          .filter(Boolean) as Array<{ x: number; y: number }>;
+        
+        let baseY = 0;
+        
+        if (predecessorPositions.length > 0) {
+          // Position relative to parent, accounting for all siblings
+          const parentY = predecessorPositions[0].y;
+          const parent = getEvolutionsTo(id)[0];
+          
+          if (parent) {
+            const allChildren = getEvolutionsFrom(parent.from)
+              .map(e => e.to)
+              .filter(childId => !hiddenNodes.has(childId));
+            
+            const childIndex = allChildren.indexOf(id);
+            const childCount = allChildren.length;
+            
+            // Spread children evenly around parent
+            const verticalSpacing = verticalGap * 0.9;
+            const totalSpread = (childCount - 1) * verticalSpacing / 2;
+            baseY = parentY + (childIndex * verticalSpacing) - totalSpread;
+          }
+        }
+        
+        const gridRow = nodeToGridRow.get(id) ?? 0;
+        baseY = Math.max(baseY, gridRow * verticalGap);
+        
+        positionMap.set(id, { x, y: baseY });
+        
+        const digimon = getDigimonById(id);
+        if (digimon) {
+          positionedNodes.push({
+            id,
+            digimon,
+            x,
+            y: baseY,
+            column: columnIndex,
+            row: gridRow
+          });
+        }
+      });
+    });
+    
+    // Normalize positions so min Y is at least 0 with padding
+    const allYPositions = positionedNodes.map(n => n.y);
+    const minY = Math.min(...allYPositions, 0);
+    const yOffset = Math.max(0, -minY + 40); // 40px top padding
+    
+    // Apply offset to all nodes
+    positionedNodes.forEach(node => {
+      node.y += yOffset;
+    });
+    
+    // Update position map with offsets
+    positionMap.forEach((pos, id) => {
+      pos.y += yOffset;
     });
     
     setNodes(positionedNodes);
     
-    // Build connections with colors
+    // Build connections with improved routing to minimize overlaps
     const conns: Array<{ from: string; to: string; requirements?: string; color: string; fromOffset: number; toOffset: number }> = [];
-    let colorIndex = 0;
     
-    // Count connections from each node to calculate offsets
+    // Count connections from each node
     const fromConnectionCounts = new Map<string, number>();
     const toConnectionCounts = new Map<string, number>();
     
     evolutions.forEach(evo => {
-      // Skip connections involving hidden nodes
       if (hiddenNodes.has(evo.from) || hiddenNodes.has(evo.to)) return;
       const fromNode = positionedNodes.find(n => n.id === evo.from);
       const toNode = positionedNodes.find(n => n.id === evo.to);
@@ -174,7 +250,7 @@ export function EvolutionTreeGraph({
       }
     });
 
-    // Count collapsed children per parent to render an expand affordance
+    // Count collapsed children per parent
     const collapsedCounts: Record<string, number> = {};
     evolutions.forEach(evo => {
       if (collapsed.has(evo.to) && !collapsed.has(evo.from)) {
@@ -187,7 +263,6 @@ export function EvolutionTreeGraph({
     const toConnectionIndex = new Map<string, number>();
     
     evolutions.forEach(evo => {
-      // skip connections involving hidden nodes
       if (hiddenNodes.has(evo.from) || hiddenNodes.has(evo.to)) return;
       const fromNode = positionedNodes.find(n => n.id === evo.from);
       const toNode = positionedNodes.find(n => n.id === evo.to);
@@ -202,7 +277,7 @@ export function EvolutionTreeGraph({
         fromConnectionIndex.set(evo.from, fromIdx + 1);
         toConnectionIndex.set(evo.to, toIdx + 1);
 
-        // Calculate offsets based on position in the list
+        // Calculate offsets with better spacing to avoid line crossings
         const cardHeight = 200;
         const fromOffset = fromCount > 1 ? (fromIdx / (fromCount - 1) - 0.5) * (cardHeight * 0.6) : 0;
         const toOffset = toCount > 1 ? (toIdx / (toCount - 1) - 0.5) * (cardHeight * 0.6) : 0;
@@ -215,7 +290,6 @@ export function EvolutionTreeGraph({
           fromOffset,
           toOffset
         });
-        colorIndex++;
       }
     });
     
@@ -309,11 +383,18 @@ export function EvolutionTreeGraph({
               const toX = toNode.x;
               const toY = toNode.y + 100 + conn.toOffset;
 
-              const baseMidX = (fromX + toX) / 2;
-              const midXOffset = conn.fromOffset * 0.3;
-              const midX = baseMidX + midXOffset;
-
-              const path = `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
+              // Calculate midpoint with offset based on relative positions
+              const horizontalDistance = toX - fromX;
+              const verticalDistance = toY - fromY;
+              
+              // Use curved path with better spacing to avoid line crossings
+              const curveDistance = horizontalDistance * 0.35;
+              const midX = fromX + curveDistance;
+              
+              // Create a smoother curve that respects connection offsets
+              const controlX1 = fromX + (horizontalDistance * 0.25);
+              const controlX2 = toX - (horizontalDistance * 0.25);
+              const path = `M ${fromX} ${fromY} C ${controlX1} ${fromY}, ${controlX2} ${toY}, ${toX} ${toY}`;
 
               return (
                 <path
@@ -322,7 +403,8 @@ export function EvolutionTreeGraph({
                   stroke={conn.color}
                   strokeWidth="3"
                   fill="none"
-                  strokeLinecap="square"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               );
             })
@@ -340,14 +422,13 @@ export function EvolutionTreeGraph({
               const toX = toNode.x;
               const toY = toNode.y + 100 + conn.toOffset;
 
-              const baseMidX = (fromX + toX) / 2;
-              const midXOffset = conn.fromOffset * 0.3;
-              const midX = baseMidX + midXOffset;
-
-              const baseReqY = (fromY + toY) / 2;
-              const boxDimensions = calculateBoxDimensions(conn.requirements || '', midX, baseReqY);
+              // Calculate midpoint for requirement box (use midpoint of curve)
+              const midX = (fromX + toX) / 2;
+              const midY = (fromY + toY) / 2;
+              
+              const boxDimensions = calculateBoxDimensions(conn.requirements || '', midX, midY);
               const reqX = midX - (boxDimensions.width / 2);
-              const reqY = baseReqY - (boxDimensions.height / 2);
+              const reqY = midY - (boxDimensions.height / 2);
               const lineHeight = 14;
 
               return (
