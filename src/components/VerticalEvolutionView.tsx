@@ -6,14 +6,12 @@ interface VerticalEvolutionViewProps {
   digimonData: Digimon[];
   evolutions: Evolution[];
   onDigimonClick: (id: string) => void;
-  onBackToTree: () => void;
   darkMode: boolean;
   setDarkMode: (value: boolean) => void;
   headerColor: string;
   setHeaderColor: (value: string) => void;
   lineColor: string;
   setLineColor: (value: string) => void;
-  showBackButton?: boolean;
 }
 
 const stageOrder: DigimonStage[] = ['In-Training', 'Rookie', 'Champion', 'Ultimate', 'Mega'];
@@ -29,14 +27,12 @@ export function VerticalEvolutionView({
   digimonData, 
   evolutions, 
   onDigimonClick, 
-  onBackToTree,
   darkMode,
   setDarkMode,
   headerColor,
   setHeaderColor,
   lineColor,
-  setLineColor,
-  showBackButton = true
+  setLineColor
 }: VerticalEvolutionViewProps) {
   const [positions, setPositions] = useState<DigimonPosition[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -412,17 +408,7 @@ export function VerticalEvolutionView({
         </div>
       </div>
 
-      {/* Bottom Button - Removed Toggle Legend */}
-      {showBackButton && (
-        <div className="flex-shrink-0 flex justify-center gap-4 px-4 py-4 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
-          <button
-            onClick={onBackToTree}
-            className="bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-red-700 transition-colors"
-          >
-            Back to Tree
-          </button>
-        </div>
-      )}
+
 
       {/* Click overlay to close suggestions */}
       {showSuggestions && (
