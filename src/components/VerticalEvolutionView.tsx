@@ -199,11 +199,12 @@ export function VerticalEvolutionView({
         updatePositions();
       } else {
         // Only schedule trailing call if we skipped the immediate execution
+        const delay = Math.max(0, SCROLL_THROTTLE_DELAY - (now - lastCallRef.current));
         trailingTimeoutRef.current = setTimeout(() => {
           lastCallRef.current = Date.now();
           updatePositions();
           trailingTimeoutRef.current = null;
-        }, SCROLL_THROTTLE_DELAY - (now - lastCallRef.current));
+        }, delay);
       }
     };
 
