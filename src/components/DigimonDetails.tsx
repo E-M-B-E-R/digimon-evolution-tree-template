@@ -82,7 +82,13 @@ export function DigimonDetails({ digimon, onClose, darkMode }: DigimonDetailsPro
                     <div className="flex-1">
                       <div className={darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'}>{fromDigimon.name}</div>
                       <div className={`text-sm ${darkMode ? 'text-[#a6a49f]' : 'text-gray-600'}`}>
-                        {evo.requirements || 'No requirements'}
+                        {evo.requirements ? (
+                          evo.requirements.split('\n').map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))
+                        ) : (
+                          'No requirements'
+                        )}
                       </div>
                     </div>
                   </div>
@@ -113,7 +119,13 @@ export function DigimonDetails({ digimon, onClose, darkMode }: DigimonDetailsPro
                     <div className="flex-1">
                       <div className={darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'}>{toDigimon.name}</div>
                       <div className={`text-sm ${darkMode ? 'text-[#a6a49f]' : 'text-gray-600'}`}>
-                        {evo.requirements || 'No requirements'}
+                        {evo.requirements ? (
+                          evo.requirements.split('\n').map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))
+                        ) : (
+                          'No requirements'
+                        )}
                       </div>
                     </div>
                   </div>
