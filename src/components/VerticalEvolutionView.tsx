@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Digimon, Evolution, DigimonStage } from '../types/digimon';
 import { Search, Moon, Sun } from 'lucide-react';
+import { useIsMobile } from './ui/use-mobile';
 
 interface VerticalEvolutionViewProps {
   digimonData: Digimon[];
@@ -43,6 +44,7 @@ export function VerticalEvolutionView({
   const [suggestions, setSuggestions] = useState<Digimon[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Get the first In-Training Digimon as default root
   const inTrainingDigimon = useMemo(() => 
@@ -254,6 +256,12 @@ export function VerticalEvolutionView({
     }).filter(conn => conn !== null);
   };
 
+  // Memoize angular connections for performance
+  const angularConnections = useMemo(() => {
+    if (isMobile || positions.length === 0) return [];
+    return getAngularConnections();
+  }, [positions, isMobile, treeEvolutions]);
+
   const currentRootDigimon = digimonData.find(d => d.id === rootDigimonId);
 
   return (
@@ -355,6 +363,34 @@ export function VerticalEvolutionView({
 
       {/* Main Content - Scrollable */}
       <div className="relative flex-1 overflow-y-auto overflow-x-hidden" ref={containerRef}>
+        {/* SVG for angular connection lines - only on desktop */}
+        {!isMobile && angularConnections.length > 0 && (
+          <svg 
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{ 
+              width: '100%', 
+              height: containerRef.current?.scrollHeight || '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          >
+            {angularConnections.map((conn, idx) => {
+              if (!conn) return null;
+              return (
+                <path
+                  key={idx}
+                  d={conn.path}
+                  stroke={lineColor}
+                  strokeWidth="3"
+                  fill="none"
+                  strokeOpacity="0.7"
+                />
+              );
+            })}
+          </svg>
+        )}
+
         {/* Digimon by Stage (with background wrapper) */}
         <div className="relative z-0 px-4 py-6 space-y-8">
           {stageOrder.map(stage => {
