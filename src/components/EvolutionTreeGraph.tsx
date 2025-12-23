@@ -388,7 +388,6 @@ export function EvolutionTreeGraph({
               
               // Use curved path with better spacing to avoid line crossings
               const curveDistance = horizontalDistance * 0.35;
-              const midX = fromX + curveDistance;
               
               // Create a smoother curve that respects connection offsets
               const controlX1 = fromX + (horizontalDistance * 0.25);
