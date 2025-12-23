@@ -190,50 +190,24 @@ export function EvolutionTreeGraph({
     const minWidth = 100;
     const maxWidth = 200;
     
-    // Estimate text width more accurately
-    const estimatedWidth = Math.min(maxWidth, Math.max(minWidth, text.length * charWidth + padding));
-    
-    // Check if box would overlap with any Digimon card
-    const cardWidth = 160;
-    const cardHeight = 200;
-    let overlaps = false;
-    
-    // Calculate base box height for single line
-    const baseHeight = lineHeight + verticalPadding;
-    
-    for (const node of nodes) {
-      const boxLeft = midX - (estimatedWidth / 2);
-      const boxRight = midX + (estimatedWidth / 2);
-      const boxTop = reqY - (baseHeight / 2);
-      const boxBottom = reqY + (baseHeight / 2);
-      
-      const cardLeft = node.x;
-      const cardRight = node.x + cardWidth;
-      const cardTop = node.y;
-      const cardBottom = node.y + cardHeight;
-      
-      // Check for overlap
-      if (boxLeft < cardRight && boxRight > cardLeft &&
-          boxTop < cardBottom && boxBottom > cardTop) {
-        overlaps = true;
-        break;
-      }
-    }
-    
-    // If overlaps and text contains comma, split into two lines
-    if (overlaps && text.includes(',')) {
-      const parts = text.split(',').map(p => p.trim());
+    // If text contains comma, always split into multiple lines
+    if (text.includes('\n')) {
+      const parts = text.split('\n').map(p => p.trim());
       // Calculate width needed for the longest line
-      const maxLineLength = Math.max(...parts.slice(0, 2).map(p => p.length));
+      const maxLineLength = Math.max(...parts.map(p => p.length));
       const multilineWidth = Math.min(maxWidth, Math.max(minWidth, maxLineLength * charWidth + padding));
       
       return {
         width: multilineWidth,
-        height: lineHeight * 2 + verticalPadding, // Two lines
-        lines: parts.slice(0, 2), // Max 2 lines
+        height: lineHeight * parts.length + verticalPadding,
+        lines: parts,
         multiline: true
       };
     }
+    
+    // Single line case
+    const estimatedWidth = Math.min(maxWidth, Math.max(minWidth, text.length * charWidth + padding));
+    const baseHeight = lineHeight + verticalPadding;
     
     return {
       width: estimatedWidth,
