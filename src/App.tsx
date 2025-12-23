@@ -10,7 +10,10 @@ const LIGHT_MODE_COLOR = '#F8AE5C'; // Orange
 const DARK_MODE_COLOR = '#A398D3'; // Light purple
 
 export default function App() {
-  const [selectedDigimon, setSelectedDigimon] = useState<string>('agumon');
+  // `rootDigimonId` controls which digimon the tree is centered on (prevents redraw on modal open)
+  // `modalDigimonId` is used only for showing the details modal
+  const [rootDigimonId, setRootDigimonId] = useState<string>('agumon');
+  const [modalDigimonId, setModalDigimonId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [suggestions, setSuggestions] = useState<typeof digimonData>([]);
@@ -49,22 +52,25 @@ export default function App() {
     }
   };
 
+  // Open details modal without changing the tree root (prevents redraw)
   const handleDigimonClick = (id: string) => {
     const digimon = digimonData.find(d => d.id === id);
     if (digimon) {
+      setModalDigimonId(id);
       setShowDetails(true);
-      setSelectedDigimon(id);
     }
   };
 
+  // Selecting from search navigates the tree to the chosen Digimon
   const handleSelectFromSearch = (id: string) => {
-    setSelectedDigimon(id);
+    setRootDigimonId(id);
     setSearchQuery('');
     setShowSuggestions(false);
     setSuggestions([]);
   };
 
-  const currentDigimon = digimonData.find(d => d.id === selectedDigimon);
+  const currentRootDigimon = digimonData.find(d => d.id === rootDigimonId);
+  const modalDigimon = modalDigimonId ? digimonData.find(d => d.id === modalDigimonId) : null;
 
   // If mobile, render full-screen vertical view
   if (isMobile) {
@@ -85,15 +91,15 @@ export default function App() {
         />
         
         {/* Details Modal */}
-        {showDetails && currentDigimon && (
+        {showDetails && modalDigimon && (
           <div 
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             onClick={() => setShowDetails(false)}
           >
             <div onClick={(e) => e.stopPropagation()}>
               <DigimonDetails 
-                digimon={currentDigimon} 
-                onClose={() => setShowDetails(false)}
+                digimon={modalDigimon} 
+                onClose={() => { setShowDetails(false); setModalDigimonId(null); }}
                 darkMode={darkMode}
               />
             </div>
@@ -199,27 +205,27 @@ export default function App() {
       <main className="max-w-[95%] mx-auto p-4 md:p-6">
         <div className={`rounded-xl shadow-lg p-4 md:p-6 ${darkMode ? 'bg-[#3e3d32]' : 'bg-white'}`}>
           <EvolutionTreeGraph
-            rootDigimonId={selectedDigimon}
+            rootDigimonId={rootDigimonId}
             digimonData={digimonData}
             evolutions={evolutions}
             onDigimonClick={handleDigimonClick}
             darkMode={darkMode}
             lineColor={themeColor}
-            digimonName={currentDigimon?.name}
+            digimonName={currentRootDigimon?.name}
           />
         </div>
       </main>
 
       {/* Details Modal */}
-      {showDetails && currentDigimon && (
+      {showDetails && modalDigimon && (
         <div 
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setShowDetails(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>
             <DigimonDetails 
-              digimon={currentDigimon} 
-              onClose={() => setShowDetails(false)}
+              digimon={modalDigimon} 
+              onClose={() => { setShowDetails(false); setModalDigimonId(null); }}
               darkMode={darkMode}
             />
           </div>
