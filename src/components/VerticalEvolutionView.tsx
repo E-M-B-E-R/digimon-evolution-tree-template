@@ -43,6 +43,7 @@ export function VerticalEvolutionView({
   const [suggestions, setSuggestions] = useState<Digimon[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastCallRef = useRef<number>(0);
 
   // Get the first In-Training Digimon as default root
   const inTrainingDigimon = useMemo(() => 
@@ -174,12 +175,11 @@ export function VerticalEvolutionView({
     };
 
     // Throttle function to limit execution frequency
-    let lastCall = 0;
     const throttleDelay = 100; // milliseconds
     const throttledUpdatePositions = () => {
       const now = Date.now();
-      if (now - lastCall >= throttleDelay) {
-        lastCall = now;
+      if (now - lastCallRef.current >= throttleDelay) {
+        lastCallRef.current = now;
         updatePositions();
       }
     };
