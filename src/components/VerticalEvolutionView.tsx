@@ -380,7 +380,7 @@ export function VerticalEvolutionView({
                         }}
                       >
                         <div
-                          className={`w-full h-full rounded-lg overflow-hidden transition-transform group-hover:scale-110 shadow-md ${
+                          className={`w-full h-full rounded-lg overflow-hidden transition-transform group-hover:scale-110 shadow-md flex items-center justify-center ${
                             darkMode ? 'bg-[#49483e]' : 'bg-gray-50'
                           }`}
                           style={{
@@ -390,7 +390,8 @@ export function VerticalEvolutionView({
                           <img
                             src={digimon.image}
                             alt={digimon.name}
-                            className="w-full h-full object-cover"
+                            className="mx-auto block"
+                            style={{ maxWidth: '100%', maxHeight: '100%' }}
                           />
                         </div>
                         <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 rounded shadow-sm z-30 ${
