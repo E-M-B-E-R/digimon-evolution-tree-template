@@ -4,14 +4,42 @@ import rawEvoLines from '../evolution_data/evo_lines.json';
 
 // Transform raw JSON data into app format
 function transformDigimonData(): Digimon[] {
-  return (rawDigimonData as any[]).map(d => ({
-    id: (d.fullName || d.altNames?.[0] || '').toLowerCase().replace(/\s+/g, ''),
-    name: d.fullName || d.altNames?.[0] || '',
-    stage: d.stage || 'Rookie',
-    image: `https://via.placeholder.com/200?text=${encodeURIComponent(d.fullName || '')}`,
-    type: [],
-    description: `${d.fullName || ''} - Habitat: ${d.habitat || 'Unknown'}`
-  }));
+  // Map stage names to folder names
+  const stageToFolder: Record<string, string> = {
+    'Fresh': 'in-training',
+    'In-Training': 'in-training',
+    'Rookie': 'rookie',
+    'Champion': 'champion',
+    'Ultimate': 'ultimate',
+    'Mega': 'mega'
+  };
+  
+  return (rawDigimonData as any[]).map(d => {
+    const name = d.fullName || d.altNames?.[0] || '';
+    const id = name.toLowerCase().replace(/\s+/g, '');
+    const stage = d.stage || 'Rookie';
+    
+    // Determine the folder based on stage
+    const folder = stageToFolder[stage] || 'unobtainable';
+    
+    // Try different file name variations to match the GIF
+    // 1. First try the exact name
+    let gifPath = `/src/images/animated/${folder}/${name}.gif`;
+    
+    // 2. If name contains spaces, try without spaces (e.g., "War Greymon" -> "WarGreymon")
+    if (name.includes(' ')) {
+      gifPath = `/src/images/animated/${folder}/${name.replace(/\s+/g, '')}.gif`;
+    }
+    
+    return {
+      id,
+      name,
+      stage,
+      image: gifPath,
+      type: [],
+      description: `${name} - Habitat: ${d.habitat || 'Unknown'}`
+    };
+  });
 }
 
 function formatEvoRequirements(evoReqs: Record<string, any> | undefined): string | undefined {
