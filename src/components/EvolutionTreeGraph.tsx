@@ -23,16 +23,14 @@ interface PositionedNode {
 }
 
 const STAGE_ORDER: Record<DigimonStage, number> = {
-  'Fresh': 0,
-  'In-Training': 1,
-  'Rookie': 2,
-  'Champion': 3,
-  'Ultimate': 4,
-  'Mega': 5
+  'In-Training': 0,
+  'Rookie': 1,
+  'Champion': 2,
+  'Ultimate': 3,
+  'Mega': 4
 };
 
 const STAGE_COLORS: Record<DigimonStage, string> = {
-  'Fresh': 'border-purple-400',
   'In-Training': 'border-purple-400',
   'Rookie': 'border-purple-400',
   'Champion': 'border-purple-400',

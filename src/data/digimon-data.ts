@@ -6,7 +6,6 @@ import rawEvoLines from '../evolution_data/evo_lines.json';
 function transformDigimonData(): Digimon[] {
   // Map stage names to folder names
   const stageToFolder: Record<string, string> = {
-    'Fresh': 'in-training',
     'In-Training': 'in-training',
     'Rookie': 'rookie',
     'Champion': 'champion',
