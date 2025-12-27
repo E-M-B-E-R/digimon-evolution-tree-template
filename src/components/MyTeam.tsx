@@ -143,7 +143,7 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
           </h2>
 
           {/* Search Bar */}
-          <div className="relative mb-8">
+          <div className="relative" style={{ marginTop: isDesktop ? '24px' : '16px', marginBottom: isDesktop ? '48px' : '36px' }}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
@@ -201,15 +201,16 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
           </div>
 
           {/* Team Grid */}
-          <div className="w-full flex justify-center">
+          <div className="w-full flex justify-center" style={{ padding: isDesktop ? '0 40px' : '0 20px' }}>
             <div
-              className="gap-0"
               style={{
                 display: 'grid',
                 width: isDesktop ? '600px' : '100%',
                 maxWidth: '600px',
                 gridTemplateColumns: isDesktop ? 'repeat(3, 200px)' : 'repeat(3, 1fr)',
-                gridAutoFlow: 'row'
+                gridAutoFlow: 'row',
+                gap: '8px',
+                paddingBottom: isDesktop ? '40px' : '32px'
               }}
             >
             {slots.map(slot => {
@@ -268,7 +269,7 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                       </button>
                       
                       {/* Digimon Image */}
-                      <div className={`w-full h-full ${isDesktop ? 'p-4' : 'p-2'} flex flex-col items-center`}>
+                      <div className="w-full h-full flex flex-col items-center" style={{ padding: isDesktop ? '20px' : '12px' }}>
                         <div className="w-full flex items-center justify-center mb-1" style={{ maxHeight: isDesktop ? '70%' : '60%' }}>
                           <img
                             src={digimon.image}
