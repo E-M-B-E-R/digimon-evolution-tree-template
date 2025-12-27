@@ -19,6 +19,15 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Track viewport width to toggle desktop layout
+  useEffect(() => {
+    const checkViewport = () => setIsDesktop(window.innerWidth >= 1024);
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
 
   // Load team from localStorage on mount
   useEffect(() => {
@@ -193,7 +202,16 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
 
           {/* Team Grid */}
           <div className="w-full flex justify-center">
-            <div className="gap-0" style={{ display: 'grid', width: '600px', gridTemplateColumns: 'repeat(3, 200px)', gridAutoFlow: 'row' }}>
+            <div
+              className="gap-0"
+              style={{
+                display: 'grid',
+                width: isDesktop ? '600px' : '100%',
+                maxWidth: '600px',
+                gridTemplateColumns: isDesktop ? 'repeat(3, 200px)' : 'repeat(3, 1fr)',
+                gridAutoFlow: 'row'
+              }}
+            >
             {slots.map(slot => {
               const digimon = slot.digimonId ? getDigimonById(slot.digimonId) : null;
               
@@ -205,8 +223,9 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                     darkMode ? 'bg-[#49483e]' : 'bg-gray-50'
                   } ${selectedSlot === slot.index ? 'ring-4' : ''}`}
                   style={{
-                    width: '200px',
-                    height: '200px',
+                    width: isDesktop ? '200px' : '100%',
+                    height: isDesktop ? '200px' : undefined,
+                    aspectRatio: isDesktop ? undefined : '1 / 1',
                     borderWidth: '3px',
                     borderStyle: 'solid',
                     borderColor: digimon ? themeColor : darkMode ? '#75715e' : '#d1d5db',
@@ -226,10 +245,10 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                       {/* Remove button (moved to top-left) */}
                       <button
                         onClick={(e) => handleRemoveFromTeam(slot.index, e)}
-                        className="absolute top-0.5 left-0.5 z-30 p-1.5 rounded-full bg-red-600 text-white hover:bg-red-700 shadow ring-2 ring-white/80"
-                        style={{ left: '4px', right: 'auto' }}
+                        className="absolute top-0.5 left-0.5 z-30 rounded-full bg-red-600 text-white hover:bg-red-700 shadow ring-2 ring-white/80"
+                        style={{ left: '4px', right: 'auto', padding: isDesktop ? '6px' : '4px' }}
                       >
-                        <X size={18} />
+                        <X size={isDesktop ? 18 : 12} />
                       </button>
 
                       {/* Switch button (moved to top-right) */}
@@ -242,15 +261,15 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                           setShowSuggestions(false);
                           setTimeout(() => inputRef.current?.focus(), 0);
                         }}
-                        className="absolute top-0.5 right-0.5 z-30 px-2 py-1 rounded text-[10px] font-medium shadow hover:opacity-90"
-                        style={{ backgroundColor: themeColor, color: '#ffffff', right: '4px', left: 'auto' }}
+                        className="absolute top-0.5 right-0.5 z-30 rounded font-medium shadow hover:opacity-90"
+                        style={{ backgroundColor: themeColor, color: '#ffffff', right: '4px', left: 'auto', padding: isDesktop ? '6px 8px' : '4px 6px', fontSize: isDesktop ? '10px' : '9px' }}
                       >
                         Switch
                       </button>
                       
                       {/* Digimon Image */}
-                      <div className="w-full h-full p-4 flex flex-col items-center justify-center">
-                        <div className="flex-1 flex items-center justify-center w-full mb-2">
+                      <div className={`w-full h-full ${isDesktop ? 'p-4' : 'p-2'} flex flex-col items-center`}>
+                        <div className="w-full flex items-center justify-center mb-1" style={{ maxHeight: isDesktop ? '70%' : '60%' }}>
                           <img
                             src={digimon.image}
                             alt={digimon.name}
@@ -258,15 +277,15 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                             style={{ maxWidth: '100%', maxHeight: '100%' }}
                           />
                         </div>
-                        <div className="text-center">
-                          <div className={`font-medium text-sm md:text-base truncate max-w-full ${
+                        <div className="text-center w-full" style={{ maxHeight: isDesktop ? '30%' : '40%' }}>
+                          <div className={`font-medium ${isDesktop ? 'text-sm' : 'text-[11px]'} truncate max-w-full ${
                             darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'
                           }`}>
                             {digimon.name}
                           </div>
-                          <div className={`text-xs mt-1 ${
+                          <div className={`${isDesktop ? 'text-xs' : ''} mt-0.5 ${
                             darkMode ? 'text-[#a6a49f]' : 'text-gray-600'
-                          }`}>
+                          }`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...(isDesktop ? {} : { fontSize: '9px' }) }}>
                             {digimon.stage}
                           </div>
                         </div>
@@ -275,10 +294,10 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                   ) : (
                     /* Empty Slot */
                     <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
+                      <div className="flex flex-col items-center justify-center text-center">
                         <Plus 
                           size={48} 
-                          className={darkMode ? 'text-[#75715e]' : 'text-gray-400'}
+                          className={`${darkMode ? 'text-[#75715e]' : 'text-gray-400'} mx-auto block`}
                         />
                         <div className={`text-xs mt-2 ${
                           darkMode ? 'text-[#a6a49f]' : 'text-gray-500'
