@@ -23,6 +23,26 @@ interface DigimonPosition {
   stage: DigimonStage;
 }
 
+const ARMOR_COLOR = '#facc15';
+const ARMOR_IDS = new Set([
+  'flamedramon',
+  'magnamon',
+  'kenkimon',
+  'seahomon',
+  'toucanmon',
+  'allomon',
+  'shurimon',
+  'pipismon',
+  'ponchomon',
+  'prairiemon',
+  'aurumon',
+  'shadramon',
+  'kongoumon',
+  'tylomon',
+  'kabukimon',
+  'lanksmon'
+]);
+
 export function VerticalEvolutionView({ 
   digimonData, 
   evolutions, 
@@ -379,12 +399,16 @@ export function VerticalEvolutionView({
                           height: '80px',
                         }}
                       >
+                        {(() => {
+                          const isArmor = ARMOR_IDS.has(digimon.id);
+                          const borderColor = isArmor ? ARMOR_COLOR : lineColor;
+                          return (
                         <div
                           className={`w-full h-full rounded-lg overflow-hidden transition-transform group-hover:scale-110 shadow-md flex items-center justify-center ${
                             darkMode ? 'bg-[#49483e]' : 'bg-gray-50'
                           }`}
                           style={{
-                            border: `3px solid ${lineColor}`,
+                            border: `3px solid ${borderColor}`,
                           }}
                         >
                           <img
@@ -394,6 +418,8 @@ export function VerticalEvolutionView({
                             style={{ maxWidth: '100%', maxHeight: '100%' }}
                           />
                         </div>
+                          );
+                        })()}
                         <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 rounded shadow-sm z-30 ${
                           darkMode ? 'bg-[#49483e] text-[#f8f8f2]' : 'bg-white text-gray-700'
                         }`}>

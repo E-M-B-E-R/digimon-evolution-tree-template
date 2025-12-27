@@ -1,6 +1,16 @@
 import { Digimon, Evolution, EvolutionTree, DigimonStage } from '../types/digimon';
 import rawDigimonData from '../evolution_data/digimon.json';
 import rawEvoLines from '../evolution_data/evo_lines.json';
+import rawArmorEvos from '../evolution_data/evo_armor.json';
+
+// Precompute armor evolution targets so we can place them in the Champion column
+const armorIds = new Set<string>();
+Object.values(rawArmorEvos as Record<string, any>).forEach(base => {
+  Object.values(base.eggs as Record<string, any>).forEach((egg: any) => {
+    const toId = String(egg.result || '').toLowerCase().replace(/\s+/g, '');
+    if (toId) armorIds.add(toId);
+  });
+});
 
 // Use Vite's glob import to get all available gifs
 const gifModules = import.meta.glob('/src/images/animated/**/*.gif', { eager: true, as: 'url' });
@@ -63,7 +73,8 @@ function transformDigimonData(): Digimon[] {
     if (!d.stage) {
       console.warn(`Digimon "${name}" missing stage property`);
     }
-    const stage: DigimonStage = d.stage || 'Rookie';
+    const rawStage: DigimonStage = d.stage || 'Rookie';
+    const stage: DigimonStage = armorIds.has(id) ? 'Champion' : rawStage;
 
     // Determine the folder based on stage
     const folder = stageFolder(stage);
@@ -191,8 +202,36 @@ function transformEvoLines(): Evolution[] {
   return evolutions;
 }
 
+function transformArmorEvos(): Evolution[] {
+  const evolutions: Evolution[] = [];
+  const formatEgg = (eggType: string) => {
+    const pretty = eggType.charAt(0).toUpperCase() + eggType.slice(1);
+    return `Digiegg of ${pretty}`;
+  };
+  
+  Object.entries(rawArmorEvos as Record<string, any>).forEach(([baseName, baseData]) => {
+    const baseId = baseName.toLowerCase().replace(/\s+/g, '');
+    
+    Object.entries(baseData.eggs as Record<string, any>).forEach(([eggType, eggData]) => {
+      const toName = eggData.result;
+      const toId = toName.toLowerCase().replace(/\s+/g, '');
+      const eggReq = formatEgg(eggType);
+      const otherReqs = formatEvoRequirements(eggData.reqs);
+      const requirements = otherReqs ? `${eggReq},\n${otherReqs}` : eggReq;
+      
+      evolutions.push({
+        from: baseId,
+        to: toId,
+        requirements
+      });
+    });
+  });
+  
+  return evolutions;
+}
+
 export const digimonData: Digimon[] = transformDigimonData();
-export const evolutions: Evolution[] = transformEvoLines();
+export const evolutions: Evolution[] = [...transformEvoLines(), ...transformArmorEvos()];
 
 export const evolutionTree: EvolutionTree = {
   digimon: digimonData,
