@@ -10,6 +10,7 @@ interface MyTeamProps {
 }
 
 const TEAM_STORAGE_KEY = 'digimon-team';
+const TEAM_NAME_STORAGE_KEY = 'digimon-team-name';
 const MAX_TEAM_SIZE = 6;
 
 export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: MyTeamProps) {
@@ -20,6 +21,10 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [teamName, setTeamName] = useState('My Team');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Track viewport width to toggle desktop layout
   useEffect(() => {
@@ -48,6 +53,11 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
         console.error('Failed to load team:', e);
       }
     }
+
+    const savedTeamName = localStorage.getItem(TEAM_NAME_STORAGE_KEY);
+    if (savedTeamName) {
+      setTeamName(savedTeamName);
+    }
   }, []);
 
   // Save team to localStorage whenever it changes
@@ -56,6 +66,11 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
     const compact = (team.filter(Boolean) as string[]);
     localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(compact));
   }, [team]);
+
+  // Save team name to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(TEAM_NAME_STORAGE_KEY, teamName);
+  }, [teamName]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -111,6 +126,26 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
     setTeam(filled);
   };
 
+  const startEditingName = () => {
+    setTempName(teamName);
+    setIsEditingName(true);
+    setTimeout(() => nameInputRef.current?.select(), 0);
+  };
+
+  const saveName = () => {
+    const newName = tempName.trim() || 'My Team';
+    setTeamName(newName);
+    setIsEditingName(false);
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveName();
+    } else if (e.key === 'Escape') {
+      setIsEditingName(false);
+    }
+  };
+
   const handleSlotClick = (index: number) => {
     if (team[index]) {
       // If slot has a digimon, navigate to its evolution tree
@@ -138,9 +173,31 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
     <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#272822]' : 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300'}`}>
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className={`rounded-xl shadow-lg p-6 md:p-8 ${darkMode ? 'bg-[#3e3d32]' : 'bg-white'}`}>
-          <h2 className={`text-3xl mb-6 text-center ${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'}`}>
-            My Team
-          </h2>
+          {isEditingName ? (
+            <div className="flex items-center justify-center mb-6 gap-2">
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                onKeyDown={handleNameKeyDown}
+                onBlur={saveName}
+                className={`text-3xl text-center font-medium rounded px-3 py-1 ${
+                  darkMode
+                    ? 'bg-[#49483e] text-[#f8f8f2] border border-[#75715e] focus:outline-none focus:ring-2 focus:ring-[#a6a49f]'
+                    : 'bg-gray-50 text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                }`}
+              />
+            </div>
+          ) : (
+            <h2 
+              onClick={startEditingName}
+              className={`text-3xl mb-6 text-center cursor-pointer hover:opacity-70 transition-opacity ${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'}`}
+              title="Click to rename your team"
+            >
+              {teamName}
+            </h2>
+          )}
 
           {/* Search Bar */}
           <div className="relative" style={{ marginTop: isDesktop ? '24px' : '16px', marginBottom: isDesktop ? '48px' : '36px' }}>
