@@ -39,6 +39,7 @@ const STAGE_COLORS: Record<DigimonStage, string> = {
 };
 
 const DEFAULT_LINE_COLOR = '#C084FC'; // Light purple color for all lines
+const ARMOR_COLOR = '#facc15'; // Yellow-ish for armor evolutions
 
 export function EvolutionTreeGraph({ 
   rootDigimonId, 
@@ -58,9 +59,30 @@ export function EvolutionTreeGraph({
     color: string;
     fromOffset: number;
     toOffset: number;
+    isArmor?: boolean;
+    dash?: string;
   }>>([]);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [collapsedChildrenCounts, setCollapsedChildrenCounts] = useState<Record<string, number>>({});
+
+  const armorEvos = new Set([
+    'flamedramon',
+    'magnamon',
+    'kenkimon',
+    'seahomon',
+    'toucanmon',
+    'allomon',
+    'shurimon',
+    'pipismon',
+    'ponchomon',
+    'prairiemon',
+    'aurumon',
+    'shadramon',
+    'kongoumon',
+    'tylomon',
+    'kabukimon',
+    'lanksmon'
+  ]);
 
   const toggleCollapse = (id: string) => {
     setCollapsed(prev => {
@@ -185,12 +207,18 @@ export function EvolutionTreeGraph({
               .map(e => e.to)
               .filter(childId => !hiddenNodes.has(childId));
             
-            const childIndex = allChildren.indexOf(id);
-            const childCount = allChildren.length;
+            // Separate armor evolutions from normal evolutions
+            const armorEvos = new Set(['flamedramon', 'magnamon', 'kenkimon', 'seahomon', 'toucanmon', 'allomon', 'shurimon', 'pipismon', 'ponchomon', 'prairiemon', 'aurumon', 'shadramon', 'kongoumon', 'tylomon', 'kabukimon', 'lanksmon']);
+            const normalChildren = allChildren.filter(c => !armorEvos.has(c));
+            const armorChildren = allChildren.filter(c => armorEvos.has(c));
             
-            // Spread children evenly around parent
+            // Reorder all children: normal first, then armor
+            const orderedChildren = [...normalChildren, ...armorChildren];
+            const childIndex = orderedChildren.indexOf(id);
+
+            // Spread all children evenly around parent
             const verticalSpacing = verticalGap * 0.9;
-            const totalSpread = (childCount - 1) * verticalSpacing / 2;
+            const totalSpread = (orderedChildren.length - 1) * verticalSpacing / 2;
             baseY = parentY + (childIndex * verticalSpacing) - totalSpread;
           }
         }
@@ -280,13 +308,17 @@ export function EvolutionTreeGraph({
         const fromOffset = fromCount > 1 ? (fromIdx / (fromCount - 1) - 0.5) * (cardHeight * 0.6) : 0;
         const toOffset = toCount > 1 ? (toIdx / (toCount - 1) - 0.5) * (cardHeight * 0.6) : 0;
 
+        const isArmor = armorEvos.has(evo.to);
+
         conns.push({
           from: evo.from,
           to: evo.to,
           requirements: evo.requirements,
-          color: lineColor || DEFAULT_LINE_COLOR,
+          color: isArmor ? ARMOR_COLOR : (lineColor || DEFAULT_LINE_COLOR),
           fromOffset,
-          toOffset
+          toOffset,
+          isArmor,
+          dash: isArmor ? '6 6' : undefined
         });
       }
     });
@@ -398,6 +430,7 @@ export function EvolutionTreeGraph({
                   d={path}
                   stroke={conn.color}
                   strokeWidth="3"
+                  strokeDasharray={conn.dash}
                   fill="none"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -477,6 +510,10 @@ export function EvolutionTreeGraph({
         
         {/* Digimon cards */}
         {nodes.map(node => (
+          (() => {
+            const isArmor = armorEvos.has(node.id);
+            const border = isArmor ? ARMOR_COLOR : (lineColor || DEFAULT_LINE_COLOR);
+            return (
           <div
             key={node.id}
             className={`relative cursor-pointer transition-all hover:scale-105 hover:shadow-2xl hover:z-10 rounded-xl shadow-lg border-4 overflow-visible ${
@@ -488,7 +525,7 @@ export function EvolutionTreeGraph({
               top: node.y,
               width: '160px',
               height: '200px',
-              borderColor: lineColor || DEFAULT_LINE_COLOR
+              borderColor: border
             }}
             onClick={() => onDigimonClick(node.id)}
           >
@@ -528,6 +565,8 @@ export function EvolutionTreeGraph({
               </div>
             </div>
           </div>
+            );
+          })()
         ))}
       </div>
     </div>
