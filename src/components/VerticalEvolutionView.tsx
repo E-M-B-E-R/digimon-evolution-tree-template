@@ -421,7 +421,7 @@ export function VerticalEvolutionView({
             return (
               <div key={stage} className="flex justify-center">
                 <div 
-                  className={`rounded-2xl p-6 ${
+                  className={`w-full max-w-full rounded-2xl p-6 ${
                     darkMode 
                       ? 'bg-[#3e3d32]/60' 
                       : 'bg-white/40'
