@@ -144,6 +144,7 @@ export default function App() {
             setLineColor={setThemeColor}
             currentView={currentView}
             setCurrentView={setCurrentView}
+            initialRootDigimonId={rootDigimonId}
           />
         )}
         

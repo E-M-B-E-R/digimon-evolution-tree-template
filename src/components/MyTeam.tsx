@@ -231,7 +231,17 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                 {suggestions.map(d => (
                   <button
                     key={d.id}
-                    onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToTeam(d.id); }}
+                    onPointerDown={(e) => {
+                      // Consume pointer down so focus stays and event doesn't reach underlying grid
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                      // Run add on click (after pointer up) so the dropdown stays mounted during the sequence
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddToTeam(d.id);
+                    }}
                     className={`w-full text-left px-4 py-3 transition-colors border-b last:border-b-0 ${
                       darkMode 
                         ? 'hover:bg-[#3e3d32] border-[#75715e]' 
