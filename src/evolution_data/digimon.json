@@ -2763,6 +2763,9 @@
   {
     "id": 243,
     "fullName": "Kimeramon",
+    "altNames": [
+      "Chimeramon"
+    ],
     "evoReqs": {
       "level": 44,
       "darkExp": 11000,
@@ -3971,6 +3974,9 @@
   {
     "id": 348,
     "fullName": "Beelzemon",
+    "altNames": [
+      "Beelzebumon"
+    ],
     "habitat": "Unknown",
     "stage": "Mega"
   },
@@ -4246,7 +4252,8 @@
     "shortName": "MMillenniummn",
     "altNames": [
       "MoonMillenniummon",
-      "MoonMilleniumon"
+      "MoonMilleniumon",
+      "MoonMilleniummon"
     ],
     "fullName": "Moon=Millenniummon",
     "evoReqs": {
