@@ -45,6 +45,13 @@ jobs:
           labels_json='${{ toJson(github.event.pull_request.labels) }}'
           echo "$labels_json" | jq -r '.[].name' | tee labels.txt
 
+          # Skip if version-bumped label is already present
+          if grep -qi '^version-bumped$' labels.txt; then
+            echo "Skipping: version-bumped label already present"
+            echo "bump=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           bump=""
           if grep -qi '^major$' labels.txt; then bump="major"; fi
           if grep -qi '^minor$' labels.txt && [ -z "$bump" ]; then bump="minor"; fi
