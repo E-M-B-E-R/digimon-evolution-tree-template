@@ -9,10 +9,10 @@
   * DNA Digivolution combos.
   * "My Team" page that allows the user to mark Digimon as favorites (must have cookies enabled).
   * Animated Digimon via GIFs.
+  * Dawn & Dusk exclusivity marker so the user knows if a Digimon is version exclusive.
 
   ## Features to Add:
-  * Dawn & Dusk exclusivity marker so the user knows if a Digimon is version exclusive.
-  * Digimon lcation hints.
+  * Digimon location hints.
 
   ## Out of scope:
   * Degeneration evolution data.
