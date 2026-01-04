@@ -170,8 +170,8 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
   }));
 
   return (
-    <div className={`${'min-h-screen flex justify-center items-start'} ${darkMode ? 'bg-[#272822]' : 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300'}`}>
-      <div className={`max-w-5xl mx-auto px-4 py-6`}>
+    <div className={`${'min-h-screen max-h-screen overflow-y-auto flex justify-center items-start'} ${darkMode ? 'bg-[#272822]' : 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300'}`}>
+      <div className={`max-w-5xl mx-auto px-4 py-6 w-full ${isDesktop ? '' : 'overflow-x-hidden'}`}>
         <div className={`rounded-xl shadow-lg p-6 md:p-8 ${darkMode ? 'bg-[#3e3d32]' : 'bg-white'}`}>
           {isEditingName ? (
             <div className="flex items-center justify-center mb-6 gap-2">
@@ -269,15 +269,15 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
           </div>
 
           {/* Team Grid */}
-          <div className="w-full flex justify-center" style={{ padding: isDesktop ? '0 40px' : '0 20px' }}>
+          <div className={`w-full flex justify-center ${isDesktop ? '' : 'px-2'}`} style={{ padding: isDesktop ? '0 40px' : undefined }}>
             <div
               style={{
                 display: 'grid',
                 width: isDesktop ? '600px' : '100%',
-                maxWidth: '600px',
-                gridTemplateColumns: isDesktop ? 'repeat(3, 200px)' : 'repeat(3, 1fr)',
+                maxWidth: isDesktop ? '600px' : '100%',
+                gridTemplateColumns: isDesktop ? 'repeat(3, 200px)' : 'repeat(3, minmax(0, 1fr))',
                 gridAutoFlow: 'row',
-                gap: '8px',
+                gap: isDesktop ? '8px' : '4px',
                 paddingBottom: isDesktop ? '40px' : '32px'
               }}
             >
