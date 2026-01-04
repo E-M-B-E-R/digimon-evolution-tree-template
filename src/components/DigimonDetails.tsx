@@ -307,7 +307,7 @@ export function DigimonDetails({ digimon, onClose, onDigimonClick, darkMode }: D
                   {Array.isArray(possibleDigimon) && possibleDigimon.length > 0 && (
                     <div className={`p-3 rounded-lg ${darkMode ? 'bg-[#49483e]' : 'bg-gray-50'}`}>
                       <div className={`text-sm font-medium mb-2 ${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'}`}>Possible Partners</div>
-                      <div className="space-y-2">
+                      <div>
                         {possibleDigimon.map((entry, i) => {
                           if (typeof entry === 'string') {
                             const partner = getByNameOrId(entry);
@@ -318,11 +318,21 @@ export function DigimonDetails({ digimon, onClose, onDigimonClick, darkMode }: D
                                 className={`flex items-center gap-2 cursor-pointer transition-colors ${
                                   partner ? (darkMode ? 'hover:text-blue-400' : 'hover:text-blue-600') : ''
                                 }`}
+                                style={{ marginBottom: '16px' }}
                               >
                                 {partner && (
                                   <img src={partner.image} alt={partner.name} className="rounded object-contain" style={{ maxWidth: '2rem', maxHeight: '2rem' }} />
                                 )}
-                                <span className={`${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'} text-sm`}>{entry}</span>
+                                <div className="flex items-center gap-1">
+                                  {partner?.exclusive && (
+                                    partner.exclusive === 'Dawn' ? (
+                                      <Sun className="text-yellow-300" fill="currentColor" style={{ width: '16px', height: '16px' }} />
+                                    ) : (
+                                      <Moon className="text-blue-200" fill="currentColor" style={{ width: '16px', height: '16px' }} />
+                                    )
+                                  )}
+                                  <span className={`${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'} text-sm`}>{entry}</span>
+                                </div>
                               </div>
                             );
                           }
@@ -332,7 +342,7 @@ export function DigimonDetails({ digimon, onClose, onDigimonClick, darkMode }: D
                             const d1 = d1Name ? getByNameOrId(d1Name) : undefined;
                             const d2 = d2Name ? getByNameOrId(d2Name) : undefined;
                             return (
-                              <div key={i} className="flex items-center gap-2">
+                              <div key={i} className="flex items-center gap-2" style={{ marginBottom: '16px' }}>
                                 {d1 && (
                                   <img 
                                     src={d1.image} 
@@ -342,12 +352,21 @@ export function DigimonDetails({ digimon, onClose, onDigimonClick, darkMode }: D
                                     style={{ maxWidth: '2rem', maxHeight: '2rem' }}
                                   />
                                 )}
-                                <span 
-                                  onClick={() => d1 && onDigimonClick?.(d1)}
-                                  className={`${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'} text-sm cursor-pointer transition-colors ${
-                                    d1 ? (darkMode ? 'hover:text-blue-400' : 'hover:text-blue-600') : ''
-                                  }`}
-                                >{d1Name}</span>
+                                <div className="flex items-center gap-1">
+                                  {d1?.exclusive && (
+                                    d1.exclusive === 'Dawn' ? (
+                                      <Sun className="text-yellow-300" fill="currentColor" style={{ width: '16px', height: '16px' }} />
+                                    ) : (
+                                      <Moon className="text-blue-200" fill="currentColor" style={{ width: '16px', height: '16px' }} />
+                                    )
+                                  )}
+                                  <span 
+                                    onClick={() => d1 && onDigimonClick?.(d1)}
+                                    className={`${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'} text-sm cursor-pointer transition-colors ${
+                                      d1 ? (darkMode ? 'hover:text-blue-400' : 'hover:text-blue-600') : ''
+                                    }`}
+                                  >{d1Name}</span>
+                                </div>
                                 <span className={`${darkMode ? 'text-[#a6a49f]' : 'text-gray-500'} text-xs`}>+</span>
                                 {d2 && (
                                   <img 
@@ -358,12 +377,21 @@ export function DigimonDetails({ digimon, onClose, onDigimonClick, darkMode }: D
                                     style={{ maxWidth: '2rem', maxHeight: '2rem' }}
                                   />
                                 )}
-                                <span 
-                                  onClick={() => d2 && onDigimonClick?.(d2)}
-                                  className={`${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'} text-sm cursor-pointer transition-colors ${
-                                    d2 ? (darkMode ? 'hover:text-blue-400' : 'hover:text-blue-600') : ''
-                                  }`}
-                                >{d2Name}</span>
+                                <div className="flex items-center gap-1">
+                                  {d2?.exclusive && (
+                                    d2.exclusive === 'Dawn' ? (
+                                      <Sun className="text-yellow-300" fill="currentColor" style={{ width: '16px', height: '16px' }} />
+                                    ) : (
+                                      <Moon className="text-blue-200" fill="currentColor" style={{ width: '16px', height: '16px' }} />
+                                    )
+                                  )}
+                                  <span 
+                                    onClick={() => d2 && onDigimonClick?.(d2)}
+                                    className={`${darkMode ? 'text-[#f8f8f2]' : 'text-gray-900'} text-sm cursor-pointer transition-colors ${
+                                      d2 ? (darkMode ? 'hover:text-blue-400' : 'hover:text-blue-600') : ''
+                                    }`}
+                                  >{d2Name}</span>
+                                </div>
                               </div>
                             );
                           }
