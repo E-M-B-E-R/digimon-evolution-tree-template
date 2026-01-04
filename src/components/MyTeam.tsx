@@ -200,8 +200,9 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
           )}
 
           {/* Search Bar */}
-          <div className="relative" style={{ marginTop: isDesktop ? '24px' : '16px', marginBottom: isDesktop ? '48px' : '36px' }}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <div className={`w-full flex justify-center ${isDesktop ? '' : ''}`} style={{ padding: isDesktop ? '0 40px' : undefined, marginTop: isDesktop ? '24px' : '16px', marginBottom: isDesktop ? '48px' : '36px' }}>
+            <div className="relative" style={{ width: isDesktop ? '600px' : '100%', maxWidth: isDesktop ? '600px' : '100%' }}>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
               placeholder={selectedSlot !== null ? `Select Digimon for slot ${selectedSlot + 1}...` : "Search to add Digimon..."}
@@ -266,6 +267,7 @@ export function MyTeam({ digimonData, darkMode, themeColor, onSelectDigimon }: M
                 ))}
               </div>
             )}
+            </div>
           </div>
 
           {/* Team Grid */}
